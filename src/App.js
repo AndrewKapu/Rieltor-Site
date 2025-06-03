@@ -30,34 +30,32 @@ function App() {
 
   useEffect(() => {
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    const bgNode = bgRef.current; // фикс для ESLint
     const getBgPosition = (offset = 0) => {
       const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
       const x = isDesktop ? FACE_POSITION_X_DESKTOP : FACE_POSITION_X_MOBILE;
       return `${x} calc(${FACE_POSITION_Y}% - ${offset * 0.4}px)`;
     };
     if (isMobile) return;
-    if (bgRef.current) {
-      bgRef.current.style.backgroundPosition = getBgPosition(0);
+    if (bgNode) {
+      bgNode.style.backgroundPosition = getBgPosition(0);
     }
     const handleScroll = () => {
-      if (!heroRef.current || !bgRef.current) return;
+      if (!heroRef.current || !bgNode) return;
       const rect = heroRef.current.getBoundingClientRect();
       const offset = Math.max(0, -rect.top);
-      bgRef.current.style.backgroundPosition = getBgPosition(offset);
+      bgNode.style.backgroundPosition = getBgPosition(offset);
+    };
+    const handleResize = () => {
+      if (bgNode) {
+        bgNode.style.backgroundPosition = getBgPosition();
+      }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', () => {
-      if (bgRef.current) {
-        bgRef.current.style.backgroundPosition = getBgPosition();
-      }
-    });
+    window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', () => {
-        if (bgRef.current) {
-          bgRef.current.style.backgroundPosition = getBgPosition();
-        }
-      });
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
